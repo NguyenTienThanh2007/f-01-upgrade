@@ -84,3 +84,20 @@ giao diện production (`next build` + `next start`), thao tác bằng Playwrigh
 - Trình duyệt thật của chủ dự án (đã dùng Chromium headless của Playwright), điện thoại thật.
 - Lỗi build rồi AI tự sửa (lần chạy này không cần sửa); trường hợp này mới chỉ có test giả lập.
 - Đăng web công khai (không có trong phạm vi).
+
+## G3 — kiểm chứng lại sau khi sửa (11/10/2026, 22:13 giờ VN)
+
+Chạy lại trên cùng stack thật, giao diện build lại (commit `67de638`), API/worker/gateway khởi động lại.
+Dự án "Tạp hoá Cô Ba — kiểm chứng G3", ảnh `real-run/g3-*`.
+
+| Lỗi | Sửa (commit) | Kiểm chứng thật |
+|---|---|---|
+| #1 tạo dự án ở chế độ thật báo lỗi giả | `17ef4a6` | ✅ Tạo xong chuyển thẳng tới trang dự án, không có thông báo lỗi; lựa chọn mẫu `orders` được lưu (không cần ghi tay nữa). |
+| #2 dải "Đang kết nối…" tới 15 giây | `3413234` | ✅ Gateway trả header và `: connected` sau 0,042 s (trước: 15,3 s); dải kết nối biến mất sau 16 ms khi mở trang. |
+| #3 "AI đang lập kế hoạch…" khi duyệt | `f9c190e` | ✅ Sau khi bấm duyệt: "Kế hoạch đã sẵn sàng" → "Đang xây dựng ứng dụng", không còn nhãn sai. |
+| #4 thông báo cũ trong ô sửa | `0ee5ff9` | Chỉ có test đơn vị (`visibleNotice`); chưa chạy lại một vòng chỉnh sửa AI thật để xem trên giao diện. |
+| #5 cảnh báo đỏ khi bộ nhớ bị chặn trong xem thử | `67de638` (`orders-template@2`) | ✅ Bản xem thử hiện ghi chú xám "Trình duyệt đang chặn bộ nhớ… chỉ giữ tới khi tải lại trang"; sự kiện và Brain ghi `template_version = 2`, `fixture_ref = orders-template@2`. |
+
+Lần chạy này gọi OpenAI 1 lần (lập kế hoạch). Dựng từ mẫu: ~13 giây, HTTP 200, `lang="vi"`.
+Ghi chú vận hành: `pkill -f "next start"` không dừng được tiến trình vì tên tiến trình đổi thành `next-server`;
+phải dừng theo PID đang giữ cổng (`lsof -t -iTCP:3000 -sTCP:LISTEN`).
