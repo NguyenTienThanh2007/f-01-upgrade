@@ -32,6 +32,26 @@ cho tiểu thương Việt Nam — app quản lý bán hàng nhỏ, giao diện 
 - Nếu gặp mâu thuẫn giữa yêu cầu của chủ dự án và kiến trúc hiện có, nêu ra và hỏi, đừng tự chọn lặng lẽ.
 - Nếu push bị từ chối vì quyền, dừng và báo, không thử cách khác.
 
+## Lệnh test (đã xác nhận trên máy này, 2026-10-11)
+
+Baseline trước M1: backend 289 passed / 2 skipped (2 test Docker acceptance cần `F01_DOCKER_ACCEPTANCE=1`),
+mypy sạch, `pnpm typecheck`/`test:web` (52)/`api:check`/`test:client` (2)/`build` đều qua.
+
+- Backend (trong `apps/api`): `uv sync --locked --python 3.12`, rồi
+  `TEST_DATABASE_URL=postgresql+psycopg://…/f01_test_<tên> uv run --locked pytest` và
+  `uv run --locked mypy src/f01 tests migrations scripts`. DB test phải là DB dùng một lần tên `f01_test_*`,
+  và **mỗi lần chạy pytest cần một DB mới**: chạy lại trên DB cũ sẽ ra ~97 lỗi `DependentObjectsStillExist`
+  ở bước downgrade của fixture (lỗi có sẵn từ trước, không phải do code).
+  Có thể dựng bằng PostgreSQL 18 (`/Library/PostgreSQL/18/bin`): `initdb` vào thư mục tạm, chạy với
+  `-c unix_socket_directories= -c listen_addresses=127.0.0.1` (đường dẫn socket dài sẽ lỗi).
+- Frontend (gốc repo): `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test:web`, `pnpm api:check`,
+  `pnpm test:client`, `pnpm build`.
+- Bản chuẩn dùng chung cho app sinh ra: `node --test apps/api/src/f01/templates/shared/tests/*.test.mjs`.
+
+Test của app sinh ra chạy bằng `node --test -- tests/*.test.mjs` trong image (Node 24, có type stripping):
+import file TS phải ghi rõ đuôi `.ts`; module được test phải tự chứa, chỉ dùng TS xoá được (không `enum`/`namespace`),
+không React/JSX/`next`. `tsconfig` của scaffold không kiểm tra `tests/`.
+
 ## Các mốc
 
 - M1 — Nền tảng tiếng Việt: chỉ dẫn planning/source generation (UI tiếng Việt, VND dạng `1.250.000 ₫`,
