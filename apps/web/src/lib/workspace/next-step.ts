@@ -48,3 +48,9 @@ export function nextStep(input: StepInput): Step {
 export function planningInProgress(state: { running: boolean; attemptStatus?: string | null }): boolean {
   return state.running || state.attemptStatus === 'pending';
 }
+
+export type ScopedNotice = { text: string; versionId: string | null };
+/** A request notice belongs to the version it was written for; a newer version makes it stale. */
+export function visibleNotice(notice: ScopedNotice | null, currentVersionId: string | null): string {
+  return notice && notice.versionId === currentVersionId ? notice.text : '';
+}

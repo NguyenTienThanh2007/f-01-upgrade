@@ -4,6 +4,7 @@ import { projectRequest, ProjectAPIError } from '@/lib/projects/browser';
 import { outcomeIsUnknown } from '@/lib/projects/creation';
 import { changeInput, readChangeAttempt, uuid, type ChangeAttempt, type Requests, type RequestRecord } from '@/lib/workspace/contracts';
 import { vi } from '@/lib/copy/vi';
+import { visibleNotice, type ScopedNotice } from '@/lib/workspace/next-step';
 import { useWorkspace, useResource, ResourceState, time } from './workspace';
 export function RequestHistory() {
   const { id } = useWorkspace(); const [cursor, setCursor] = useState('');
@@ -18,11 +19,14 @@ export function RequestCard({ record }: { record: RequestRecord }) {
 /** "Bạn muốn sửa gì?": records a change request through the existing request flow. */
 export function EditRequest() {
   const { id, snapshot, refresh, runCommands, flow } = useWorkspace();
-  const [text, setText] = useState(''), [pending, setPending] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState(''), [review, setReview] = useState(false), [unknown, setUnknown] = useState(false), [ready, setReady] = useState(false);
+  const [text, setText] = useState(''), [pending, setPending] = useState(false), [error, setError] = useState(''), [scoped, setScoped] = useState<ScopedNotice | null>(null), [review, setReview] = useState(false), [unknown, setUnknown] = useState(false), [ready, setReady] = useState(false);
   const [simulate, setSimulate] = useState(false);
   const [base, setBase] = useState({ brain: snapshot.project.current_brain_revision_id, version: snapshot.project.current_version_id });
   const attempt = useRef<ChangeAttempt | null>(null), busy = useRef(false); const storageKey = `f01.pending-change.v1.${id}`;
   const demo = flow.real === false;
+  const versionId = snapshot.project.current_version_id;
+  const setNotice = (text: string) => setScoped(text ? { text, versionId } : null);
+  const notice = visibleNotice(scoped, versionId);
   useEffect(() => { let receipt: ChangeAttempt | null = null; try { receipt = readChangeAttempt(sessionStorage, storageKey); } catch { /* memory recovery remains */ }
     if (receipt) { attempt.current = receipt; setText(receipt.input.text); setBase({ brain: receipt.input.base_brain_revision_id, version: receipt.input.base_version_id }); setSimulate(Boolean(receipt.simulate)); setUnknown(true); } setReady(true);
   }, [storageKey]);

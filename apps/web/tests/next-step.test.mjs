@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { nextStep, planningInProgress } from '../src/lib/workspace/next-step.ts';
+import { nextStep, planningInProgress, visibleNotice } from '../src/lib/workspace/next-step.ts';
 import { availableTemplate, readTemplateChoice, writeTemplateChoice, templateCatalog } from '../src/lib/workspace/template-catalog.ts';
 
 const base = { archived: false, activeRun: null, latestRun: null, currentVersion: null, real: true, proposals: [], requests: [{ id: 'r1', kind: 'initial', created_at: '2026-10-01T08:00:00Z' }], planningPending: false };
@@ -72,4 +72,12 @@ test('reviewing a plan is not shown as planning', () => {
   // While the review request is in flight the plan is still current and unreviewed: the step stays "review".
   const reviewing = { archived: false, activeRun: null, latestRun: null, currentVersion: null, real: true, requests: [{ id: 'r1', kind: 'initial', created_at: '2026-10-01T08:00:00Z' }], proposals: [{ id: 'p1', current_context: true, reviewed: false, request_id: 'r1' }] };
   assert.equal(nextStep({ ...reviewing, planningPending: planningInProgress({ running: false, attemptStatus: 'succeeded' }) }).kind, 'review');
+});
+
+test('a change-request notice disappears once a newer version is published', () => {
+  const notice = { text: 'Đã lưu yêu cầu.', versionId: 'v1' };
+  assert.equal(visibleNotice(notice, 'v1'), 'Đã lưu yêu cầu.');
+  assert.equal(visibleNotice(notice, 'v2'), '');
+  assert.equal(visibleNotice({ text: 'x', versionId: null }, null), 'x');
+  assert.equal(visibleNotice(null, 'v1'), '');
 });
