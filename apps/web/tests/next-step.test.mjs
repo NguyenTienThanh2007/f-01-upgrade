@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { nextStep } from '../src/lib/workspace/next-step.ts';
+import { nextStep, planningInProgress } from '../src/lib/workspace/next-step.ts';
 import { availableTemplate, readTemplateChoice, writeTemplateChoice, templateCatalog } from '../src/lib/workspace/template-catalog.ts';
 
 const base = { archived: false, activeRun: null, latestRun: null, currentVersion: null, real: true, proposals: [], requests: [{ id: 'r1', kind: 'initial', created_at: '2026-10-01T08:00:00Z' }], planningPending: false };
@@ -62,4 +62,14 @@ test('template choice is remembered per project and only for available templates
   const blocked = { getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); }, removeItem: () => { throw new Error('blocked'); } };
   assert.equal(readTemplateChoice(blocked, 'p'), null);
   assert.doesNotThrow(() => writeTemplateChoice(blocked, 'p', 'orders'));
+});
+
+test('reviewing a plan is not shown as planning', () => {
+  assert.equal(planningInProgress({ running: false, attemptStatus: null }), false);
+  assert.equal(planningInProgress({ running: true }), true);
+  assert.equal(planningInProgress({ running: false, attemptStatus: 'pending' }), true);
+  assert.equal(planningInProgress({ running: false, attemptStatus: 'succeeded' }), false);
+  // While the review request is in flight the plan is still current and unreviewed: the step stays "review".
+  const reviewing = { archived: false, activeRun: null, latestRun: null, currentVersion: null, real: true, requests: [{ id: 'r1', kind: 'initial', created_at: '2026-10-01T08:00:00Z' }], proposals: [{ id: 'p1', current_context: true, reviewed: false, request_id: 'r1' }] };
+  assert.equal(nextStep({ ...reviewing, planningPending: planningInProgress({ running: false, attemptStatus: 'succeeded' }) }).kind, 'review');
 });

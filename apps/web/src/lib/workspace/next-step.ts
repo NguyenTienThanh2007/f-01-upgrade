@@ -43,3 +43,8 @@ export function nextStep(input: StepInput): Step {
   if (newest && newest.kind === 'change' && Date.parse(newest.created_at) > version) return { kind: 'changePlan', requestId: newest.id };
   return input.currentVersion ? { kind: 'ready' } : { kind: 'noPlan' };
 }
+
+/** Only a planning command or a pending attempt is "planning"; reviewing a plan is not. */
+export function planningInProgress(state: { running: boolean; attemptStatus?: string | null }): boolean {
+  return state.running || state.attemptStatus === 'pending';
+}

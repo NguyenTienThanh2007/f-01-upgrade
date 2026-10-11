@@ -9,6 +9,7 @@ import { planningErrors } from '@/lib/planning/contracts';
 import { uuid, type Snapshot, type RequestRecord, type Requests } from '@/lib/workspace/contracts';
 import { buildReceipt, type BuildReceipt, type TemplateId } from '@/lib/workspace/build-receipt';
 import { vi } from '@/lib/copy/vi';
+import { planningInProgress } from '@/lib/workspace/next-step';
 
 export type Proposal = components['schemas']['ProposalRecord'];
 export type Attempt = components['schemas']['AttemptRecord'];
@@ -42,7 +43,7 @@ export function useProjectFlow(id: string, snapshot: Snapshot | null, refresh: (
 
   // Planning commands (same receipt format and storage key as before).
   const planStorage = `f01-context-plan:${id}`;
-  const [planReceipt, setPlanReceipt] = useState<PlanReceipt | null>(null), [planBusy, setPlanBusy] = useState(false), [planError, setPlanError] = useState(''), [attempt, setAttempt] = useState<Attempt | null>(null), [planReady, setPlanReady] = useState(false);
+  const [planReceipt, setPlanReceipt] = useState<PlanReceipt | null>(null), [planBusy, setPlanBusy] = useState(false), [planRunning, setPlanRunning] = useState(false), [planError, setPlanError] = useState(''), [attempt, setAttempt] = useState<Attempt | null>(null), [planReady, setPlanReady] = useState(false);
   const planBusyRef = useRef(false), pollRef = useRef<AbortController | null>(null);
   useEffect(() => { try { setPlanReceipt(parsePlanReceipt(sessionStorage.getItem(planStorage))); } catch { /* storage blocked */ } setPlanReady(true); return () => pollRef.current?.abort(); }, [planStorage]);
   function savePlan(r: PlanReceipt | null) { setPlanReceipt(r); try { if (r) sessionStorage.setItem(planStorage, JSON.stringify(r)); else sessionStorage.removeItem(planStorage); } catch { /* memory receipt remains */ } }
@@ -55,7 +56,7 @@ export function useProjectFlow(id: string, snapshot: Snapshot | null, refresh: (
   }
   async function runPlan(start: PlanReceipt | null) {
     if (planBusyRef.current || !snapshot) return;
-    planBusyRef.current = true; pollRef.current = null; setPlanBusy(true); setPlanError(''); setAttempt(null);
+    planBusyRef.current = true; pollRef.current = null; setPlanBusy(true); setPlanRunning(true); setPlanError(''); setAttempt(null);
     let r = start;
     try {
       if (!r) throw new Error(vi.planning.staleError);
@@ -79,12 +80,12 @@ export function useProjectFlow(id: string, snapshot: Snapshot | null, refresh: (
       if (pollRef.current?.signal.aborted) return;
       if (e instanceof ProjectAPIError && e.status >= 400 && e.status < 500 && e.code !== 'IDEMPOTENCY_IN_PROGRESS') { savePlan(null); await refresh(); }
       if (!(e instanceof DOMException && e.name === 'AbortError')) setPlanError(message(e, vi.planning.unavailable));
-    } finally { planBusyRef.current = false; setPlanBusy(false); }
+    } finally { planBusyRef.current = false; setPlanBusy(false); setPlanRunning(false); }
   }
   const fresh = (input: PlanInput, intent = '', record = false): PlanReceipt => ({ key: crypto.randomUUID(), requestKey: crypto.randomUUID(), input, intent, created: Date.now(), record });
   const planning = {
     busy: planBusy, error: planError, attempt, receipt: planReceipt, ready: planReady,
-    pending: planBusy || attempt?.status === 'pending',
+    pending: planningInProgress({ running: planRunning, attemptStatus: attempt?.status }),
     initial: () => snapshot && !planReceipt ? runPlan(fresh({ kind: 'initial', request_id: snapshot.current_brain.content.original_request_id, base_brain_revision_id: snapshot.project.current_brain_revision_id, base_version_id: snapshot.project.current_version_id })) : Promise.resolve(),
     forRequest: (request: RequestRecord) => !planReceipt && request.base_brain_revision_id ? runPlan(fresh({ kind: 'change', request_id: request.id, base_brain_revision_id: request.base_brain_revision_id, base_version_id: request.base_version_id })) : Promise.resolve(),
     recordAndPlan: (intent: string, bases: { brain: string; version: string | null }) => snapshot && !planReceipt ? runPlan(fresh({ kind: 'change', request_id: snapshot.current_brain.content.original_request_id, base_brain_revision_id: bases.brain, base_version_id: bases.version }, intent, true)) : Promise.resolve(),
