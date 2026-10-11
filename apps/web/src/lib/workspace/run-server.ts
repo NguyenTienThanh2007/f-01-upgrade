@@ -56,6 +56,18 @@ export async function handleEventStream(request: Request, projectId: string, env
     const result = await client.GET('/v1/projects/{project_id}/events/stream',{params:{path:{project_id:projectId},query:{after_sequence:after},header:{'last-event-id':header ?? undefined}},parseAs:'stream',signal:request.signal});
     if (!result.response.ok) return fail(result.response.status === 401 ? 'AUTHENTICATION_REQUIRED' : result.response.status === 404 ? 'NOT_FOUND' : result.response.status === 422 ? 'VALIDATION_ERROR' : 'SERVICE_UNAVAILABLE',result.response.status);
     if (!result.data || !result.response.headers.get('content-type')?.startsWith('text/event-stream')) return fail('SERVICE_UNAVAILABLE',502);
-    return new Response(result.data,{headers:{'Content-Type':'text/event-stream','Cache-Control':'no-store','X-Accel-Buffering':'no'}});
+    return new Response(withOpeningComment(result.data as ReadableStream<Uint8Array>),{headers:{'Content-Type':'text/event-stream','Cache-Control':'no-store','X-Accel-Buffering':'no'}});
   } catch (error) { return fail(error instanceof SessionUnavailable && error.status===401 ? 'AUTHENTICATION_REQUIRED' : 'SERVICE_UNAVAILABLE',error instanceof SessionUnavailable ? error.status : 503); }
+}
+
+// Response headers are only flushed with the first body chunk. Without this comment the browser
+// waits for the backend's first heartbeat (15s) before EventSource opens. Comments are ignored by EventSource.
+const OPENING = new TextEncoder().encode(': connected\n\n');
+export function withOpeningComment(upstream: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  const reader = upstream.getReader();
+  return new ReadableStream<Uint8Array>({
+    start(controller) { controller.enqueue(OPENING); },
+    async pull(controller) { const { done, value } = await reader.read(); if (done) controller.close(); else controller.enqueue(value); },
+    cancel(reason) { return reader.cancel(reason); },
+  });
 }

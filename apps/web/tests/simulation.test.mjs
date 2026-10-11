@@ -58,6 +58,14 @@ test('SSE gateway preserves header precedence and forwards unbuffered bytes with
   controller.abort();assert.equal(req.signal.aborted,true);return new Response(body,{headers:{'Content-Type':'text/event-stream','Set-Cookie':'secret=1'}});
  });
  assert.equal(response.headers.get('Set-Cookie'),null);assert.equal(response.headers.get('X-Accel-Buffering'),'no');
- const reader=response.body.getReader();assert.match(new TextDecoder().decode((await reader.read()).value),/id: 8/);streamController.close();await reader.cancel();
+ const reader=response.body.getReader();assert.equal(new TextDecoder().decode((await reader.read()).value),': connected\n\n');assert.match(new TextDecoder().decode((await reader.read()).value),/id: 8/);streamController.close();await reader.cancel();
  const invalid=await handleEventStream(new Request(`http://127.0.0.1:3000?after_sequence=0`,{headers:{'Last-Event-ID':'bad'}}),id,env,async()=>{throw new Error('must not send');});assert.equal(invalid.status,422);
+});
+test('SSE gateway opens the stream immediately even when the backend has nothing to send yet',async () => {
+ let cancelled=false;const silent=new ReadableStream({pull(){return new Promise(()=>{});},cancel(){cancelled=true;}});
+ const response=await handleEventStream(new Request(`http://127.0.0.1:3000/api/v1/projects/${id}/events/stream?after_sequence=3`),id,env,async()=>new Response(silent,{headers:{'Content-Type':'text/event-stream'}}));
+ const reader=response.body.getReader();
+ const first=await Promise.race([reader.read(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('stream did not open')),500))]);
+ assert.equal(new TextDecoder().decode(first.value),': connected\n\n');
+ await reader.cancel();assert.equal(cancelled,true);
 });
