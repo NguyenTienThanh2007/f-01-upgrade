@@ -24,9 +24,9 @@ export function PreviewView() {
     <div className="vn-app-grid">
       <div className="vn-app-preview">
         {version ? <><PreviewFrame descriptor={version.preview_descriptor} viewport={viewport} /><p className="vn-hint">{historical ? vi.preview.historical : version.mode === 'real' ? vi.preview.noteReal : vi.preview.noteDemo}</p></>
-          : !versionId && <DeviceFrame viewport={viewport} label={vi.preview.frameLabel}><div className="device-state device-empty"><ProjectPulse state={snapshot.active_run ? 'building' : 'idle'} label={snapshot.active_run ? vi.nextStep.building.title : vi.preview.emptyTitle} animate={Boolean(snapshot.active_run)} /><p>{vi.preview.emptyBody}</p><span className="device-skeleton" aria-hidden="true"><i /><i /><i /></span></div></DeviceFrame>}
+          : !versionId && <DeviceFrame viewport={viewport} label={vi.preview.frameLabel} placeholder><div className="device-state device-empty"><ProjectPulse state={snapshot.active_run ? 'building' : 'idle'} label={snapshot.active_run ? vi.nextStep.building.title : vi.preview.emptyTitle} animate={Boolean(snapshot.active_run)} /><p>{vi.preview.emptyBody}</p><span className="device-skeleton" aria-hidden="true"><i /><i /><i /></span></div></DeviceFrame>}
       </div>
-      <div className="vn-app-edit"><EditRequest /></div>
+      {snapshot.current_version && <div className="vn-app-edit"><EditRequest /></div>}
     </div>
   </section>;
 }

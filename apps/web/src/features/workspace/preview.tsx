@@ -7,8 +7,8 @@ import { vi } from '@/lib/copy/vi';
 type Viewport = 'desktop' | 'tablet' | 'phone';
 
 /** Phone (or desktop) bezel around preview content; never an empty white page. */
-export function DeviceFrame({ viewport, children, label }: { viewport: Viewport; children: ReactNode; label: string }) {
-  return <div className={`device-frame device-${viewport === 'phone' ? 'phone' : 'desktop'}`} role="group" aria-label={label}><div className="device-screen">{children}</div></div>;
+export function DeviceFrame({ viewport, children, label, placeholder = false }: { viewport: Viewport; children: ReactNode; label: string; placeholder?: boolean }) {
+  return <div className={`device-frame device-${viewport === 'phone' ? 'phone' : 'desktop'}${placeholder ? ' device-placeholder' : ''}`} role="group" aria-label={label}><div className="device-screen">{children}</div></div>;
 }
 
 export function PreviewFrame({ descriptor, viewport }: { descriptor: Descriptor; viewport: Viewport }) {

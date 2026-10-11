@@ -125,3 +125,9 @@ button.template-choice[aria-pressed="true"] em { color: var(--accent); }
   .project-heading .meta, .saved-project-title, .brain-revision-controls a { display: inline-flex; align-items: center; min-height: 44px; }
   details > summary { min-height: 44px; display: flex; align-items: center; }
 }
+
+/* Before the first version: a compact placeholder, not a tall empty device. */
+.device-placeholder .device-screen { height: auto; min-height: 280px; }
+.device-placeholder .device-state { position: static; min-height: 280px; }
+.vn-app-grid:has(> .vn-app-preview:only-child) { grid-template-columns: minmax(0, 1fr); }
+.version-record .text-action + .text-action { margin-left: 16px; }
