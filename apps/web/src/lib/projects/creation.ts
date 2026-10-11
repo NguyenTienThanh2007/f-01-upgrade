@@ -12,3 +12,9 @@ export function readAttempt(storage: Pick<Storage, 'getItem'>): Attempt | null {
 export function outcomeIsUnknown(status: number, code: string): boolean {
   return status === 0 || status >= 500 || code === 'IDEMPOTENCY_IN_PROGRESS';
 }
+/** A confirmed creation response: a project id and one of the two execution modes the server reports. */
+export function confirmedCreation(result: { project?: { id?: unknown }; execution_mode?: unknown } | null | undefined): string | null {
+  const id = result?.project?.id;
+  if (typeof id !== 'string' || !/^[0-9a-f-]{36}$/i.test(id)) return null;
+  return result?.execution_mode === 'simulated' || result?.execution_mode === 'real' ? id : null;
+}

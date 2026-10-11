@@ -7,7 +7,7 @@ import { PlanView } from '@/features/project-planning/plan-view';
 import { useDraftPlan } from '@/features/project-planning/use-draft-plan';
 import { projectRequest, ProjectAPIError } from '@/lib/projects/browser';
 import { createInput, type Created, type Session } from '@/lib/projects/contracts';
-import { ATTEMPT_STORAGE, readAttempt, outcomeIsUnknown, type Attempt } from '@/lib/projects/creation';
+import { ATTEMPT_STORAGE, confirmedCreation, readAttempt, outcomeIsUnknown, type Attempt } from '@/lib/projects/creation';
 import { availableTemplate, templateCatalog, writeTemplateChoice } from '@/lib/workspace/template-catalog';
 import { vi } from '@/lib/copy/vi';
 
@@ -50,10 +50,11 @@ export function ProjectCreation({ initialIdea, initialTemplate }: { initialIdea:
     busy.current = true; setPending(true); setError('');
     try {
       const result = await projectRequest<Created>('/projects', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': command.key }, body: JSON.stringify(command.input) });
-      if (!/^[0-9a-f-]{36}$/i.test(result.project.id) || result.execution_mode !== 'simulated') throw new ProjectAPIError('SERVICE_UNAVAILABLE', 0);
+      const projectId = confirmedCreation(result);
+      if (!projectId) throw new ProjectAPIError('SERVICE_UNAVAILABLE', 0);
       forgetReceipt(); setUnknown(false);
-      writeTemplateChoice(localStorage, result.project.id, template);
-      router.push(`/projects/${result.project.id}`);
+      writeTemplateChoice(localStorage, projectId, template);
+      router.push(`/projects/${projectId}`);
     } catch (reason) {
       const unresolved = !(reason instanceof ProjectAPIError) || outcomeIsUnknown(reason.status, reason.code) || reason.code === 'IDEMPOTENCY_KEY_REUSED';
       setUnknown(unresolved); if (!unresolved) forgetReceipt();

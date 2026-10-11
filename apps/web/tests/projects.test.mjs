@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handleProjectsRequest } from '../src/lib/projects/server.ts';
 import { createInput, projectETag } from '../src/lib/projects/contracts.ts';
-import { readAttempt, ATTEMPT_STORAGE, outcomeIsUnknown } from '../src/lib/projects/creation.ts';
+import { readAttempt, ATTEMPT_STORAGE, outcomeIsUnknown, confirmedCreation } from '../src/lib/projects/creation.ts';
 const token = 'synthetic-m3-private-token-1234567890123456789';
 const env = { APP_ENV: 'test', DEV_API_TOKEN: token, API_INTERNAL_URL: 'http://127.0.0.1:8000', NEXT_PUBLIC_APP_URL: 'http://127.0.0.1:3000' };
 const id = 'ab56889d-a04c-41bb-831e-429948d34cb8', key = '30fe5cca-25e1-4f68-b80a-6b281d7b5c22';
@@ -49,4 +49,12 @@ test('creation validation and unresolved-command receipt respect the recovery wi
   const attempt = { key, input: createInput('CRM', 'A CRM for estate agents.'), started: Date.now() };
   assert.deepEqual(readAttempt({ getItem: name => { assert.equal(name, ATTEMPT_STORAGE); return JSON.stringify(attempt); } }), attempt); assert.equal(readAttempt({ getItem: () => 'bad' }), null); assert.equal(readAttempt({ getItem: () => { throw new Error('blocked'); } }), null);
   assert.equal(outcomeIsUnknown(503, 'SERVICE_UNAVAILABLE'), true); assert.equal(outcomeIsUnknown(0, 'offline'), true); assert.equal(outcomeIsUnknown(409, 'IDEMPOTENCY_IN_PROGRESS'), true); assert.equal(outcomeIsUnknown(422, 'VALIDATION_ERROR'), false);
+});
+
+test('creation is confirmed in both demo and real execution modes', () => {
+  const id = '9b7c2a3e-1f5d-4c8e-9a0b-112233445566';
+  assert.equal(confirmedCreation({ project: { id }, execution_mode: 'simulated' }), id);
+  // Regression: real mode used to be treated as a failed creation although the project existed.
+  assert.equal(confirmedCreation({ project: { id }, execution_mode: 'real' }), id);
+  for (const bad of [null, {}, { project: { id }, execution_mode: 'other' }, { project: { id: 'nope' }, execution_mode: 'real' }, { project: {}, execution_mode: 'real' }]) assert.equal(confirmedCreation(bad), null);
 });
