@@ -44,7 +44,14 @@ test("toCSV writes a BOM, a header row and CRLF line endings", () => {
     [{ name: "Áo thun", price: 150000 }, { name: "Quần jean", price: 420000 }],
     [{ key: "name", label: "Tên sản phẩm" }, { key: "price", label: "Giá (₫)" }],
   );
-  assert.equal(csv, "﻿Tên sản phẩm,Giá (₫)\r\nÁo thun,150000\r\nQuần jean,420000\r\n");
+  assert.equal(csv, "\uFEFFTên sản phẩm,Giá (₫)\r\nÁo thun,150000\r\nQuần jean,420000\r\n");
+});
+
+test("toCSV starts with exactly one U+FEFF byte order mark", () => {
+  const csv = toCSV([], [{ key: "name", label: "Tên" }]);
+  assert.equal(csv.codePointAt(0), 0xfeff);
+  assert.notEqual(csv.codePointAt(1), 0xfeff);
+  assert.deepEqual([...Buffer.from(csv, "utf8").subarray(0, 3)], [0xef, 0xbb, 0xbf]);
 });
 
 test("toCSV quotes commas, quotes and line breaks", () => {
@@ -52,7 +59,7 @@ test("toCSV quotes commas, quotes and line breaks", () => {
     [{ note: 'Giao "gấp", trước 5h\nGọi trước' }],
     [{ key: "note", label: "Ghi chú" }],
   );
-  assert.equal(csv, '﻿Ghi chú\r\n"Giao ""gấp"", trước 5h\nGọi trước"\r\n');
+  assert.equal(csv, '\uFEFFGhi chú\r\n"Giao ""gấp"", trước 5h\nGọi trước"\r\n');
 });
 
 test("toCSV formats empty values and dates", () => {
@@ -60,7 +67,7 @@ test("toCSV formats empty values and dates", () => {
     [{ day: new Date(2026, 9, 1), customer: null, phone: undefined }],
     [{ key: "day", label: "Ngày" }, { key: "customer", label: "Khách" }, { key: "phone", label: "SĐT" }],
   );
-  assert.equal(csv, "﻿Ngày,Khách,SĐT\r\n01/10/2026,,\r\n");
+  assert.equal(csv, "\uFEFFNgày,Khách,SĐT\r\n01/10/2026,,\r\n");
 });
 
 test("toCSV neutralises spreadsheet formulas in text but keeps negative numbers", () => {
@@ -68,7 +75,7 @@ test("toCSV neutralises spreadsheet formulas in text but keeps negative numbers"
     [{ text: "=HYPERLINK(\"http://x\")", plus: "+84 90", at: "@sum", amount: -50000 }],
     [{ key: "text", label: "a" }, { key: "plus", label: "b" }, { key: "at", label: "c" }, { key: "amount", label: "d" }],
   );
-  assert.equal(csv, '﻿a,b,c,d\r\n"\'=HYPERLINK(""http://x"")",\'+84 90,\'@sum,-50000\r\n');
+  assert.equal(csv, '\uFEFFa,b,c,d\r\n"\'=HYPERLINK(""http://x"")",\'+84 90,\'@sum,-50000\r\n');
 });
 
 test("downloadCSV does nothing outside the browser", () => {

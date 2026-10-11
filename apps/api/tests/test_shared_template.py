@@ -20,6 +20,7 @@ def test_every_shared_file_satisfies_the_generated_source_policy() -> None:
     for path, content in files.items():
         assert validate_source_path(path) == path
         assert validate_text(content) == content
+        assert "\ufeff" not in content, f"{path}: write the BOM as an escape, not a raw character"
         assert len(content.encode("utf-8")) <= MAX_FILE_BYTES
     assert len(files) <= MAX_SOURCE_FILES
     assert sum(len(content.encode("utf-8")) for content in files.values()) <= MAX_SOURCE_BYTES

@@ -39,7 +39,7 @@ function csvCell(value: unknown): string {
 export function toCSV<Row extends Record<string, unknown>>(rows: readonly Row[], columns: readonly CsvColumn<Row>[]): string {
   const lines = [columns.map((column) => csvCell(column.label)).join(",")];
   for (const row of rows) lines.push(columns.map((column) => csvCell(row[column.key])).join(","));
-  return "﻿" + lines.join("\r\n") + "\r\n";
+  return "\uFEFF" + lines.join("\r\n") + "\r\n";
 }
 
 /** Browser only: saves the CSV text as a file. */
