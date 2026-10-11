@@ -47,6 +47,10 @@ mypy sạch, `pnpm typecheck`/`test:web` (52)/`api:check`/`test:client` (2)/`bui
 - Frontend (gốc repo): `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm test:web`, `pnpm api:check`,
   `pnpm test:client`, `pnpm build`.
 - Bản chuẩn dùng chung cho app sinh ra: `node --test apps/api/src/f01/templates/shared/tests/*.test.mjs`.
+- Mẫu app (M2) chạy trong image đã nghiệm thu, bật bằng cờ riêng (không có cờ thì test bị skip, skip không phải bằng chứng):
+  `F01_TEMPLATE_DOCKER=1 F01_SANDBOX_IMAGE_ID=sha256:bf55945a66450b4d747196aed159eba926ca377b66e41400da70c0a54e3363c0 uv run --locked pytest tests/template_docker`.
+  Test này chạy đúng các pha materialize/install/typecheck/build/test/preview của `DockerSandbox`, không gọi model, không cần DB.
+- Mẫu nằm ở `apps/api/src/f01/templates/<id>/` (+ `shared/`), đăng ký trong `application/templates.py`; đổi nội dung mẫu thì tăng `version`.
 
 Test của app sinh ra chạy bằng `node --test -- tests/*.test.mjs` trong image (Node 24, có type stripping):
 import file TS phải ghi rõ đuôi `.ts`; module được test phải tự chứa, chỉ dùng TS xoá được (không `enum`/`namespace`),
