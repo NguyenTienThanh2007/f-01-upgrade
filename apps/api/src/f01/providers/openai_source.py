@@ -17,7 +17,18 @@ per-file SHA-256. Preserve unrelated files. Initial source requires app/layout.t
 and app/page.tsx. Do not propose commands, package manifests, dependencies, config,
 secrets, production deployment or claims that tests/builds ran. The application
 owns the scaffold, commands and verification. Repair only issues in observed
-repair evidence. Return exactly the requested schema, without markdown fences."""
+repair evidence. Return exactly the requested schema, without markdown fences.
+Vietnamese shop defaults unless the plan says otherwise: <html lang="vi">; every UI
+string in Vietnamese with full diacritics; money via formatVND (1.250.000 ₫, no
+decimals) and dates via formatDate (dd/mm/yyyy) from lib/vn.ts. Reuse lib/vn.ts if it
+exists, otherwise create it self-contained with no imports, also exporting toCSV and
+downloadCSV for CSV export.
+Persist data in localStorage under a versioned key, read it only in client components
+after mount, and tolerate missing or malformed values. Mobile-first: works at 375px,
+touch targets at least 44px. Tests are tests/*.test.mjs run by node --test after the
+build; they may import only pure lib modules, with the explicit .ts extension (for
+example ../lib/vn.ts), never React, JSX or next. Tested modules use erasable
+TypeScript only: no enum, namespace or constructor parameter properties."""
 MAX_OUTPUT_TOKENS = 16000
 MAX_RESPONSE_BYTES = 786432
 
