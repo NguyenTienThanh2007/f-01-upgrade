@@ -1011,6 +1011,10 @@ export interface components {
             source_digest?: string | null;
             /** Step Cursor */
             step_cursor?: number | null;
+            /** Template Id */
+            template_id?: string | null;
+            /** Template Version */
+            template_version?: number | null;
         };
         /** EventRecord */
         EventRecord: {
@@ -1584,6 +1588,8 @@ export interface components {
              * Format: uuid
              */
             proposal_id: string;
+            /** Template */
+            template?: "orders" | null;
         };
         /** StartRun */
         StartRun: {

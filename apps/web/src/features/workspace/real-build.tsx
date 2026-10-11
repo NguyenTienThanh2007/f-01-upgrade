@@ -30,6 +30,10 @@ export function RealBuildPanel(){
   {error&&<p role="alert">{error}</p>}
   {receipt?<button className="button button-secondary" disabled={pending} onClick={()=>void perform(receipt)}>Resolve saved build command</button>:<>
    {!snapshot.active_run&&session.data?.capabilities?.real_generation&&<button className="button button-primary" disabled={pending||!current||Boolean(snapshot.project.archived_at)} onClick={()=>current&&void perform({key:crypto.randomUUID(),path:`/projects/${id}/builds`,body:{proposal_id:current.id}})}>Build reviewed plan</button>}
+   {!snapshot.active_run&&!snapshot.current_version&&session.data?.capabilities?.real_generation&&<div className="template-choice">
+    <button className="button button-secondary" disabled={pending||!current||Boolean(snapshot.project.archived_at)} onClick={()=>current&&void perform({key:crypto.randomUUID(),path:`/projects/${id}/builds`,body:{proposal_id:current.id,template:'orders'}})}>Dùng mẫu Quản lý đơn hàng</button>
+    <p>Phiên bản đầu là mẫu chung, bạn có thể yêu cầu AI chỉnh sửa tiếp.</p>
+   </div>}
    {snapshot.active_run?.mode==='real'&&<button className="button button-secondary" disabled={pending} onClick={()=>void perform({key:crypto.randomUUID(),path:`/projects/${id}/builds/${snapshot.active_run!.id}/cancel`,body:{}})}>Cancel real build</button>}
    {latest?.run.status==='failed'&&!snapshot.active_run&&<button className="button button-secondary" disabled={pending||!current} onClick={()=>void perform({key:crypto.randomUUID(),path:`/projects/${id}/builds/${latest.run.id}/retry`,body:{}})}>Retry real build</button>}
   </>}

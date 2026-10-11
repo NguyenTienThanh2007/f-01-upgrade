@@ -3,6 +3,7 @@ import {createBackendClient} from '@f01/api-client';
 import {configuration,sameOrigin,input,fail,object} from '../projects/server.ts';
 import {backendCredentials,SessionUnavailable} from '../auth/session.ts';
 import {uuid} from './contracts.ts';
+import {startBody} from './build-receipt.ts';
 export async function handleBuild(request:Request,projectId:string,segments:string[],env:Record<string,string|undefined>,send:typeof fetch=fetch){
  if(!uuid.test(projectId))return fail('NOT_FOUND',404);
  const [id,action]=segments;
@@ -21,8 +22,8 @@ export async function handleBuild(request:Request,projectId:string,segments:stri
    let body:unknown;try{body=await input(request);}catch{return fail('VALIDATION_ERROR',422);}
    if(!object(body))return fail('VALIDATION_ERROR',422);
    if(!id){
-    if(Object.keys(body).length!==1||typeof body.proposal_id!=='string'||!uuid.test(body.proposal_id))return fail('VALIDATION_ERROR',422);
-    result=await client.POST('/v1/projects/{project_id}/builds',{params:{path,header:{'idempotency-key':key!}},body:{proposal_id:body.proposal_id},signal});
+    const start=startBody(body);if(!start)return fail('VALIDATION_ERROR',422);
+    result=await client.POST('/v1/projects/{project_id}/builds',{params:{path,header:{'idempotency-key':key!}},body:start,signal});
    }else{
     if(Object.keys(body).length)return fail('VALIDATION_ERROR',422);
     result=action==='cancel'?await client.POST('/v1/projects/{project_id}/builds/{run_id}/cancel',{params:{path:runPath},signal}):await client.POST('/v1/projects/{project_id}/builds/{run_id}/retry',{params:{path:runPath,header:{'idempotency-key':key!}},signal});

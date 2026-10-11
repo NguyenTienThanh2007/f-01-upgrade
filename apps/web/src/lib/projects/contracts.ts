@@ -13,6 +13,7 @@ export function createInput(title: string, brief: string): CreateInput | null {
   return { title: name || null, brief: text };
 }
 export const errors: Record<string, string> = {
+  TEMPLATE_REQUIRES_NEW_PROJECT: 'Chỉ dùng được mẫu khi dự án chưa có phiên bản nào. Hãy yêu cầu AI chỉnh sửa phiên bản hiện tại.',
   ACTIVE_RUN_EXISTS: 'This project has a queued or running demonstration. Wait for it to finish or cancel it in Run details.',
   RUN_NOT_RETRYABLE: 'Only a failed simulation attempt can be retried. Inspect the current run state.',
   STALE_BRAIN_REVISION: 'The Brain changed since this draft began. Your text is preserved. Review the current project before recording it.',

@@ -1296,6 +1296,31 @@
               }
             ],
             "title": "Step Cursor"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "pattern": "^[a-z][a-z0-9-]{0,39}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "template_version": {
+            "anyOf": [
+              {
+                "maximum": 10000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Version"
           }
         },
         "title": "EventPayload",
@@ -2908,6 +2933,18 @@
             "format": "uuid",
             "title": "Proposal Id",
             "type": "string"
+          },
+          "template": {
+            "anyOf": [
+              {
+                "const": "orders",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template"
           }
         },
         "required": [
