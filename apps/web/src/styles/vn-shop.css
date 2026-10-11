@@ -3,6 +3,8 @@
 /* Touch targets: at least 44px on phones, tablets and coarse pointers. */
 @media (max-width: 1023px), (pointer: coarse) {
   .button, .icon-button, .workspace-tabs a, .tech-links a, .template-choice, .viewport-controls button, select, input:not([type="checkbox"]):not([type="radio"]) { min-height: 44px; }
+  .sample-view-switch button, .sample-size-control, .trace-control, .evidence-row, .tech-links button, .planning-docs summary { min-height: 44px; }
+  .text-action, .back-link, .entry-footer a, .register-workspace-link, .mobile-header > a, .os-wordmark { display: inline-flex; align-items: center; min-height: 44px; }
 }
 
 /* Homepage template list: unavailable entries and readable summaries. */
@@ -41,4 +43,85 @@ button.template-choice[aria-pressed="true"] em { color: var(--accent); }
   .vn-template-grid { grid-template-columns: 1fr; }
   .template-choice { min-height: 72px; }
   .vn-actions .button { flex: 1 1 100%; }
+}
+
+/* Project page: next step bar (one main action). */
+.next-step { margin: 0; padding: 20px 24px; background: var(--surface); border-bottom: 1px solid var(--line); border-left: 3px solid var(--accent); }
+.next-step[data-step="ready"], .next-step[data-step="demoReady"] { border-left-color: var(--success); }
+.next-step[data-step="failed"] { border-left-color: var(--error); }
+.next-step-main { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.next-step-copy { min-width: 0; }
+.next-step-copy .meta { color: var(--muted); }
+.next-step-copy h2 { font-size: 20px; line-height: 26px; font-weight: 500; margin: 4px 0; }
+.next-step-copy p { margin: 0; color: var(--muted); max-width: 70ch; }
+.next-step-action { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+.next-step-action .project-pulse { font-size: 0; gap: 0; }
+.next-step-action .project-pulse > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.next-step-action .button { min-height: 44px; }
+.next-step-template { margin: 12px 0 0; font-size: 14px; color: var(--muted); }
+.next-step-template .text-action { background: none; border: 0; padding: 0 0 0 4px; color: var(--accent); cursor: pointer; font: inherit; min-height: 44px; }
+.next-step-plan { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.next-step-plan summary { cursor: pointer; font-weight: 500; min-height: 44px; display: flex; align-items: center; }
+.next-step-plan h3 { font-size: 14px; margin: 12px 0 4px; }
+.next-step-plan ul { margin: 0; padding-left: 20px; }
+.next-step-plan li { margin: 4px 0; }
+.next-step .form-error { margin: 12px 0 0; }
+
+/* Three tabs plus a collapsed technical area. */
+.vn-tabs { align-items: center; }
+.workspace-tabs a { min-height: 48px; }
+.tech-details { position: relative; font-size: 14px; }
+.tech-details summary { cursor: pointer; min-height: 48px; display: flex; align-items: center; color: var(--muted); }
+.tech-details[open] summary { color: var(--ink); }
+.tech-links { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 0 12px; }
+.tech-links a, .tech-links button { display: inline-flex; align-items: center; min-height: 36px; padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); font: inherit; color: var(--ink); cursor: pointer; }
+.tech-links a[aria-current], .tech-links button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+@media (min-width: 1024px) {
+  .tech-details[open] .tech-links { position: absolute; right: 0; top: 48px; z-index: 5; width: max-content; max-width: 520px; padding: 12px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px; box-shadow: 0 2px 8px rgba(34,39,34,0.08); }
+}
+
+/* App tab: preview in a device frame with the edit box beside it. */
+.vn-app-grid { display: grid; grid-template-columns: minmax(0, auto) minmax(280px, 1fr); gap: 32px; align-items: start; margin-top: 20px; }
+.vn-app-preview { min-width: 0; }
+.vn-app-edit { position: sticky; top: 16px; }
+.preview-stage .preview-frame-status { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 8px; }
+.device-frame { position: relative; margin: 0 auto; background: var(--ink); }
+.device-phone { width: 390px; max-width: 100%; padding: 12px; border-radius: 36px; }
+.device-desktop { width: 100%; padding: 8px; border-radius: 8px; }
+.device-screen { position: relative; overflow: hidden; background: var(--canvas); }
+.device-phone .device-screen { height: 720px; border-radius: 26px; }
+.device-desktop .device-screen { height: 640px; border-radius: 4px; }
+.device-screen iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--surface); opacity: 0; transition: opacity 160ms var(--ease); }
+.device-screen iframe.is-loaded { opacity: 1; }
+.device-state { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 12px; padding: 32px 24px; background: var(--canvas); z-index: 1; }
+.device-state p { margin: 0; color: var(--muted); }
+.device-error { background: var(--surface); }
+.device-skeleton { display: grid; gap: 8px; width: 100%; margin-top: 8px; }
+.device-skeleton i { display: block; height: 44px; border-radius: 4px; background: var(--surface-muted); }
+.device-skeleton i:nth-child(2) { width: 80%; }
+.device-skeleton i:nth-child(3) { width: 60%; }
+.edit-request { display: flex; flex-direction: column; gap: 8px; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.edit-request h2 { font-size: 18px; line-height: 24px; font-weight: 500; margin: 0; }
+.edit-request textarea { width: 100%; min-height: 96px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 4px; background: var(--surface); font: inherit; resize: vertical; }
+.edit-request .button { align-self: flex-start; min-height: 44px; }
+@media (prefers-reduced-motion: reduce) { .device-screen iframe { transition: none; } }
+@media (max-width: 1279px) {
+  .vn-app-grid { grid-template-columns: minmax(0, 1fr); }
+  .vn-app-edit { position: static; }
+}
+@media (max-width: 767px) {
+  .next-step { padding: 16px; }
+  .next-step-main { flex-direction: column; align-items: stretch; gap: 12px; }
+  .next-step-action { justify-content: space-between; }
+  .next-step-action .button { flex: 1; }
+  .device-phone { width: 100%; padding: 6px; border-radius: 20px; }
+  .device-phone .device-screen { height: 70dvh; min-height: 480px; border-radius: 14px; }
+  .edit-request .button { align-self: stretch; }
+}
+
+/* Placed last so it wins over the compact desktop sizes above. */
+@media (max-width: 1023px), (pointer: coarse) {
+  .tech-links a, .tech-links button, .project-filters select, .project-filters input, .viewport-controls button { min-height: 44px; }
+  .project-heading .meta, .saved-project-title, .brain-revision-controls a { display: inline-flex; align-items: center; min-height: 44px; }
+  details > summary { min-height: 44px; display: flex; align-items: center; }
 }

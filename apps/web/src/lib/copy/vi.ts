@@ -669,6 +669,23 @@ export const vi = {
       { label: 'Sẵn sàng', time: '08:08', event: 'Mở bản xem thử', receipt: 'XEM THỬ / DUYỆT', detail: 'Ứng dụng mẫu sẵn sàng để xem. Đây là minh hoạ, không phải ứng dụng đã phát hành.' },
     ],
   },
+  fixtures: {
+    crm: {
+      title: 'Shop Linh · Ứng dụng mẫu', brand: 'SHOP LINH / ĐƠN HÀNG', eyebrow: 'MỘT SHOP NHỎ. ĐƠN HÀNG RÕ RÀNG.', heading: 'Đơn nào cũng có chỗ,<br>không sót đơn nào.',
+      intro: 'Khách hàng và đơn hàng mẫu để xem thử giao diện. Không có tài khoản, tin nhắn hay khách hàng thật.', search: 'Tìm đơn mẫu',
+      stages: ['Mới', 'Đang giao', 'Đã thanh toán'],
+      cards: [['Chị Hạnh', 'Váy hoa nhí · 450.000 ₫', 'new'], ['Anh Tuấn', 'Quần jean ống suông · 390.000 ₫', 'qualified'], ['Chị Mai', 'Áo sơ mi linen · 320.000 ₫', 'viewing'], ['Anh Phúc', 'Áo thun cotton × 2 · 300.000 ₫', 'qualified']],
+    },
+    generic: {
+      title: 'Cửa hàng mẫu · Ứng dụng mẫu', brand: 'CỬA HÀNG / MẪU', eyebrow: 'MỘT KHUNG ỨNG DỤNG MẪU.', heading: 'Chỗ cho ý tưởng<br>tiếp theo của bạn.',
+      intro: 'Nội dung mẫu có sẵn. Giao diện này không được dựng từ mô tả của bạn.', search: 'Tìm thẻ mẫu',
+      stages: ['Ý tưởng', 'Đang tìm hiểu', 'Đang xem lại'],
+      cards: [['Làm rõ quy trình', 'Thẻ kế hoạch mẫu', 'new'], ['Xem thử giao diện', 'Ví dụ thiết kế có sẵn', 'qualified'], ['Xem lại bản mẫu', 'Dữ liệu mẫu độc lập', 'viewing']],
+    },
+    disclosure: 'BẢN DEMO', placeholder: 'Tìm trong bản mẫu', reset: 'Đặt lại', filters: 'Bộ lọc mẫu', all: 'Tất cả',
+    count: 'mục mẫu', inspect: 'Xem chi tiết', note: 'Dữ liệu mẫu. Thao tác không liên hệ ai và không lưu gì.',
+    footer: 'Ứng dụng mẫu có sẵn / không dựng mã, không chạy hay phát hành.<br>Thao tác được đặt lại khi tải lại khung.',
+  },
   errors: {
     TEMPLATE_REQUIRES_NEW_PROJECT: 'Chỉ dùng được mẫu khi dự án chưa có phiên bản nào. Hãy yêu cầu AI chỉnh sửa phiên bản hiện tại.',
     ACTIVE_RUN_EXISTS: 'Dự án đang có lần chạy chưa xong. Hãy chờ hoặc huỷ trong Chi tiết lần chạy.',
