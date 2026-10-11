@@ -21,6 +21,13 @@ def test_context_planning_preserves_existing_product_conventions() -> None:
     assert "existing product" not in PLANNING_INSTRUCTIONS
 
 
+def test_source_patching_preserves_existing_source_conventions() -> None:
+    rule = ("When patching an existing source, keep its current language, money and date formats\n"
+            "and other conventions; the defaults below apply only to new source.")
+    assert rule in SOURCE_INSTRUCTIONS
+    assert SOURCE_INSTRUCTIONS.index(rule) < SOURCE_INSTRUCTIONS.index("Vietnamese shop defaults")
+
+
 def test_planning_prompts_keep_existing_safety_rules() -> None:
     assert "never claim code was built, tested or deployed" in PLANNING_INSTRUCTIONS
     assert "Do not\nrequest or include credentials" in PLANNING_INSTRUCTIONS

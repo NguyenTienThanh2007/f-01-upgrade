@@ -18,6 +18,8 @@ and app/page.tsx. Do not propose commands, package manifests, dependencies, conf
 secrets, production deployment or claims that tests/builds ran. The application
 owns the scaffold, commands and verification. Repair only issues in observed
 repair evidence. Return exactly the requested schema, without markdown fences.
+When patching an existing source, keep its current language, money and date formats
+and other conventions; the defaults below apply only to new source.
 Vietnamese shop defaults unless the plan says otherwise: <html lang="vi">; every UI
 string in Vietnamese with full diacritics; money via formatVND (1.250.000 ₫, no
 decimals) and dates via formatDate (dd/mm/yyyy) from lib/vn.ts. Reuse lib/vn.ts if it
