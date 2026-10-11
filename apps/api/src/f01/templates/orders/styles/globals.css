@@ -27,6 +27,7 @@ input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(
 textarea { min-height: 64px; }
 input[aria-invalid="true"] { border-color: var(--danger); }
 .error { color: var(--danger); font-size: 0.9rem; }
+.note { color: var(--muted); font-size: 0.9rem; }
 
 button { padding: 8px 16px; border: 1px solid var(--line); background: #fff; color: var(--text); cursor: pointer; }
 button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   EMPTY_INPUT, ORDER_CSV_COLUMNS, STATUSES, STATUS_LABELS, STORAGE_KEY,
-  createOrder, dailyTotals, filterOrders, foldText, isValidPhone, orderCsvRows, orderTotal,
+  createOrder, dailyTotals, filterOrders, foldText, isValidPhone, openStorage, orderCsvRows, orderTotal,
   parseStoredOrders, removeOrder, serializeOrders, setStatus, updateOrder, validateOrder,
 } from "../lib/orders.ts";
 import { toCSV } from "../lib/vn.ts";
@@ -101,4 +101,14 @@ test("orders export to CSV with Vietnamese headers, labels and totals", () => {
     "\uFEFFNgày tạo,Khách hàng,Số điện thoại,Sản phẩm,Số lượng,Đơn giá (₫),Thành tiền (₫),Trạng thái,Ghi chú\r\n" +
       "01/10/2026,Nguyễn Thị Hoa,0901 234 567,Áo thun,2,150000,300000,Đã thanh toán,\r\n",
   );
+});
+
+test("openStorage returns null when the browser blocks storage", () => {
+  const store = new Map();
+  const ok = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) };
+  assert.equal(openStorage(() => ok), ok);
+  assert.equal(store.size, 0);
+  assert.equal(openStorage(() => { throw new Error("SecurityError"); }), null);
+  assert.equal(openStorage(() => undefined), null);
+  assert.equal(openStorage(() => ({ ...ok, setItem: () => { throw new Error("QuotaExceededError"); } })), null);
 });

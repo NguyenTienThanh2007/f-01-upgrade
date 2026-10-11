@@ -62,7 +62,7 @@ def test_template_build_publishes_the_seed_without_calling_the_model(database: D
     saved = workspace(database, owner, pid)
     assert saved.current_version and saved.current_version.mode == "real"
     decisions = saved.current_brain.content.design_decisions
-    template = [d for d in decisions if d.provenance.fixture_ref == "orders-template@1"]
+    template = [d for d in decisions if d.provenance.fixture_ref == "orders-template@2"]
     assert len(template) == 1 and template[0].provenance.source == "template" and template[0].provenance.run_id == run.id
     assert template[0].provenance.candidate_id == detail.candidates[0].id
     assert {d.provenance.source for d in decisions} >= {"template", "generated", "verified", "published"}
@@ -70,9 +70,9 @@ def test_template_build_publishes_the_seed_without_calling_the_model(database: D
     trail = events(database, run.id)
     queued = next(e for e in trail if e.type == "execution.queued")
     applied = next(e for e in trail if e.type == "execution.template_applied")
-    assert queued.payload["template_id"] == "orders" and queued.payload["template_version"] == 1
+    assert queued.payload["template_id"] == "orders" and queued.payload["template_version"] == 2
     assert applied.payload["provenance"] == "template" and applied.payload["candidate_id"] == str(detail.candidates[0].id)
-    assert applied.payload["template_id"] == "orders" and applied.payload["template_version"] == 1
+    assert applied.payload["template_id"] == "orders" and applied.payload["template_version"] == 2
 
 
 def test_repaired_template_records_both_template_and_model_provenance(database: Database, configured: Settings, project_plan: ProjectPlan) -> None:

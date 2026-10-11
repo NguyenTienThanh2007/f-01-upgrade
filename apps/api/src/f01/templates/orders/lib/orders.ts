@@ -148,6 +148,20 @@ function isOrder(value: unknown): value is Order {
   );
 }
 
+/** The browser storage if it can be written, otherwise null (blocked, e.g. in a sandboxed preview). */
+export function openStorage(get: () => Storage | undefined): Storage | null {
+  try {
+    const storage = get();
+    if (!storage) return null;
+    const probe = STORAGE_KEY + ".probe";
+    storage.setItem(probe, "1");
+    storage.removeItem(probe);
+    return storage;
+  } catch {
+    return null;
+  }
+}
+
 /** Tolerates missing, malformed or other-version data by returning only valid orders. */
 export function parseStoredOrders(raw: string | null): Order[] {
   if (!raw) return [];

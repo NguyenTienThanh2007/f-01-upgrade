@@ -27,7 +27,7 @@ class Template:
 
 
 TEMPLATES: dict[str, Template] = {
-    "orders": Template(id="orders", version=1, directories=("shared", "orders")),
+    "orders": Template(id="orders", version=2, directories=("shared", "orders")),
 }
 
 

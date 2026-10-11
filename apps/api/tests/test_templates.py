@@ -18,7 +18,7 @@ def lineage() -> SourceLineage:
 
 def test_orders_template_is_versioned_with_a_stable_reference() -> None:
     assert set(TEMPLATES) == {"orders"}
-    assert get_template("orders").ref == "orders-template@1"
+    assert get_template("orders").ref == "orders-template@2"
     with pytest.raises(ValueError):
         get_template("inventory")
 
