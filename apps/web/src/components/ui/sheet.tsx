@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useLayoutEffect, useRef, useId, type ReactNode } from 'react';
 import { containDialogFocus } from './dialog-focus';
+import { vi } from '@/lib/copy/vi';
 export function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const titleId = useId();
   const ref = useRef<HTMLDialogElement>(null);
@@ -19,7 +20,7 @@ export function Sheet({ open, onClose, title, children }: { open: boolean; onClo
   }, [open]);
   useEffect(() => () => { ref.current?.close(); }, []);
   return <dialog ref={ref} tabIndex={-1} className="sheet" aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }} onKeyDown={containDialogFocus} onClick={event => { if (event.target === ref.current) onClose(); }}>
-    <div className="sheet-heading"><h2 id={titleId}>{title}</h2><button className="icon-button" onClick={onClose} aria-label="Close panel">×</button></div>
+    <div className="sheet-heading"><h2 id={titleId}>{title}</h2><button className="icon-button" onClick={onClose} aria-label={vi.common.close}>×</button></div>
     {children}
   </dialog>;
 }

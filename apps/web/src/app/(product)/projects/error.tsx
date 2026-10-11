@@ -1,6 +1,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { ProjectPulse } from '@/features/project-pulse/project-pulse';
+import { vi } from '@/lib/copy/vi';
 export default function ErrorPage({ reset }: { reset: () => void }) {
-  return <div className="page narrow-page workspace-error" role="alert"><span className="page-eyebrow">WORKSPACE / NEEDS ATTENTION</span><ProjectPulse state="error" label="Unable to open workspace" /><h1>Let’s try that again.</h1><p className="muted">This view couldn’t be loaded. Try opening it again.</p><Button onClick={reset}>Try again</Button></div>;
+  return <div className="page narrow-page workspace-error" role="alert"><span className="page-eyebrow">{vi.errorPage.eyebrow}</span><ProjectPulse state="error" label={vi.errorPage.pulse} /><h1>{vi.errorPage.title}</h1><p className="muted">{vi.errorPage.body}</p><Button onClick={reset}>{vi.errorPage.action}</Button></div>;
 }

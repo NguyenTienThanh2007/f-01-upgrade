@@ -1,2 +1,3 @@
 import Link from 'next/link';
-export default function NotFound() { return <main className="sign-in"><span className="meta">404</span><h1>This page isn’t available.</h1><p>Return to your projects to continue.</p><Link href="/projects" className="button button-primary">Projects</Link></main>; }
+import { vi } from '@/lib/copy/vi';
+export default function NotFound() { return <main className="sign-in"><span className="meta">404</span><h1>{vi.notFound.title}</h1><p>{vi.notFound.body}</p><Link href="/projects" className="button button-primary">{vi.notFound.action}</Link></main>; }

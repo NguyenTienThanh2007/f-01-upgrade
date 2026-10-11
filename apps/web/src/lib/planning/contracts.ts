@@ -1,3 +1,4 @@
+import { vi } from '../copy/vi.ts';
 export interface ProjectPlan {
   project_title: string;
   product_summary: string;
@@ -9,23 +10,23 @@ export interface ProjectPlan {
 
 export const IDEA_LIMIT = 10_000;
 export const planningErrors = {
-  VALIDATION_ERROR: { status: 422, message: 'Enter a software idea of 1–10,000 characters.' },
-  REQUEST_FORBIDDEN: { status: 403, message: 'This request could not be verified. Reload this page and try again.' },
-  UNSUPPORTED_MEDIA_TYPE: { status: 415, message: 'Send the idea as JSON.' },
-  REQUEST_TOO_LARGE: { status: 413, message: 'The request is too large. Shorten your idea and try again.' },
-  PLANNING_NOT_CONFIGURED: { status: 503, message: 'Planning is not configured on this server. Check the local server configuration and restart the frontend.' },
-  AUTHENTICATION_REQUIRED: { status: 503, message: 'The frontend could not authenticate with the backend. Check the shared development configuration and restart both servers.' },
-  PROVIDER_NOT_CONFIGURED: { status: 503, message: 'Planning needs a provider key in the backend configuration. Configure the backend and restart it.' },
-  PROVIDER_AUTHENTICATION_FAILED: { status: 502, message: 'The planning provider rejected the backend credentials or permissions. Check the backend configuration.' },
-  PROVIDER_QUOTA_EXCEEDED: { status: 503, message: 'The planning provider has exhausted its credits or usage allowance. Check the provider account before retrying.' },
-  PROVIDER_RATE_LIMITED: { status: 429, message: 'The planning provider is busy. Wait a moment before trying again.' },
-  PROVIDER_TIMEOUT: { status: 504, message: 'Planning took too long. Your brief is still here; try again when ready.' },
-  PROVIDER_UNAVAILABLE: { status: 503, message: 'The planning service is unavailable. Check that the backend is running, then try again.' },
-  PROVIDER_INVALID_RESPONSE: { status: 502, message: 'The planning service returned an invalid plan. Your brief is still here; try again.' },
-  PROVIDER_INCOMPLETE_RESPONSE: { status: 502, message: 'The planning provider could not finish the plan. Try a more focused brief.' },
-  PROVIDER_REFUSED: { status: 422, message: 'The planning provider declined this idea. Revise the brief and try again.' },
-  PROVIDER_ERROR: { status: 502, message: 'The planning provider could not complete this request. Your brief is still here; try again.' },
-  INTERNAL_ERROR: { status: 500, message: 'Planning could not be completed. Your brief is still here; try again.' },
+  VALIDATION_ERROR: { status: 422, message: vi.planningErrors.VALIDATION_ERROR },
+  REQUEST_FORBIDDEN: { status: 403, message: vi.planningErrors.REQUEST_FORBIDDEN },
+  UNSUPPORTED_MEDIA_TYPE: { status: 415, message: vi.planningErrors.UNSUPPORTED_MEDIA_TYPE },
+  REQUEST_TOO_LARGE: { status: 413, message: vi.planningErrors.REQUEST_TOO_LARGE },
+  PLANNING_NOT_CONFIGURED: { status: 503, message: vi.planningErrors.PLANNING_NOT_CONFIGURED },
+  AUTHENTICATION_REQUIRED: { status: 503, message: vi.planningErrors.AUTHENTICATION_REQUIRED },
+  PROVIDER_NOT_CONFIGURED: { status: 503, message: vi.planningErrors.PROVIDER_NOT_CONFIGURED },
+  PROVIDER_AUTHENTICATION_FAILED: { status: 502, message: vi.planningErrors.PROVIDER_AUTHENTICATION_FAILED },
+  PROVIDER_QUOTA_EXCEEDED: { status: 503, message: vi.planningErrors.PROVIDER_QUOTA_EXCEEDED },
+  PROVIDER_RATE_LIMITED: { status: 429, message: vi.planningErrors.PROVIDER_RATE_LIMITED },
+  PROVIDER_TIMEOUT: { status: 504, message: vi.planningErrors.PROVIDER_TIMEOUT },
+  PROVIDER_UNAVAILABLE: { status: 503, message: vi.planningErrors.PROVIDER_UNAVAILABLE },
+  PROVIDER_INVALID_RESPONSE: { status: 502, message: vi.planningErrors.PROVIDER_INVALID_RESPONSE },
+  PROVIDER_INCOMPLETE_RESPONSE: { status: 502, message: vi.planningErrors.PROVIDER_INCOMPLETE_RESPONSE },
+  PROVIDER_REFUSED: { status: 422, message: vi.planningErrors.PROVIDER_REFUSED },
+  PROVIDER_ERROR: { status: 502, message: vi.planningErrors.PROVIDER_ERROR },
+  INTERNAL_ERROR: { status: 500, message: vi.planningErrors.INTERNAL_ERROR },
 } as const;
 export type PlanningErrorCode = keyof typeof planningErrors;
 export interface PlanningError { code: PlanningErrorCode; message: string; request_id: string }
