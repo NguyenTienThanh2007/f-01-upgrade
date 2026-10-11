@@ -141,6 +141,8 @@ class EventPayload(Contract):
     evidence_id: UUID | None = None
     source_digest: str | None = None
     provenance: str | None = None
+    template_id: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9-]{0,39}$")
+    template_version: int | None = Field(default=None, ge=1, le=10000)
 
 
 class EventRecord(Contract):

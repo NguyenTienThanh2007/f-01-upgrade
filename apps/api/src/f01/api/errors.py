@@ -29,6 +29,7 @@ APPLICATION_EXECUTION_ERRORS = {
     "REAL_BUILD_COMMAND_REQUIRED": (409, "Use real build controls for generated source versions."),
     "CLEANUP_PENDING": (409, "The previous sandbox is awaiting cleanup."),
     "VERIFICATION_REQUIRED": (409, "Required verification evidence is missing."),
+    "TEMPLATE_REQUIRES_NEW_PROJECT": (409, "A template can only start a project that has no version yet."),
 }
 
 PROVIDER_ERRORS: dict[ProviderErrorCode, tuple[int, str]] = {

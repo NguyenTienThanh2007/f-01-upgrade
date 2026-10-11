@@ -6,8 +6,13 @@ from f01.domain.projects import Contract, RunRecord
 from f01.domain.types import UtcDateTime
 
 
+TemplateId = Literal["orders"]
+
+
 class StartBuild(Contract):
     proposal_id: UUID
+    # Only for a project without any version: the first source is this reviewed template.
+    template: TemplateId | None = None
 
 
 class Diagnostic(Contract):

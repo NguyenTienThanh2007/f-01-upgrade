@@ -19,6 +19,7 @@ from f01.domain.execution import BuildDetail, CandidateMetadata, CommandEvidence
 from f01.domain.projects import EventPayload, RunRecord
 from f01.domain.source import GenerationContext, SourceArtifact, SourceLineage
 from f01.application.source_artifacts import validate_artifact
+from f01.application.templates import Template, get_template, seed_source
 
 LEASE_SECONDS = 30
 
@@ -27,14 +28,15 @@ def now() -> datetime:
     return datetime.now(UTC)
 
 
-def emit(session: Session, project: Project, run: BuildRun, phase: str, *, candidate: UUID | None = None, evidence: UUID | None = None, issue: str | None = None, resolves: str | None = None, provenance: str | None = None, failed: bool = False) -> int:
+def emit(session: Session, project: Project, run: BuildRun, phase: str, *, candidate: UUID | None = None, evidence: UUID | None = None, issue: str | None = None, resolves: str | None = None, provenance: str | None = None, failed: bool = False, template: Template | None = None) -> int:
     project.event_sequence += 1
     project.last_activity_at = project.updated_at = now()
     session.add(BuildEvent(id=uuid4(), project_id=project.id, run_id=run.id, request_id=run.request_id,
         sequence=project.event_sequence, type=f"execution.{phase}", phase=run.phase, mode="real",
         severity="error" if failed else "info", message=f"Real execution: {phase.replace('_', ' ')}{' failed' if failed else ''}.",
         payload=EventPayload(execution_phase=phase, candidate_id=candidate, evidence_id=evidence, issue_id=issue,
-            resolves_issue_id=resolves, provenance=provenance).model_dump(mode="json", exclude_none=True), occurred_at=now()))
+            resolves_issue_id=resolves, provenance=provenance, template_id=template.id if template else None,
+            template_version=template.version if template else None).model_dump(mode="json", exclude_none=True), occurred_at=now()))
     return project.event_sequence
 
 
@@ -66,7 +68,8 @@ def queue(database: Database, settings: Settings, owner: UUID, project_id: UUID,
         lock_owner(session, owner)
         project = owned_project(session, owner, project_id, lock=True)
         route = f"/v1/projects/{project_id}/builds" + (f"/{retry_id}/retry" if retry_id else "")
-        receipt, replay = reserve(session, owner, route, key, body.model_dump(mode="json"), now())
+        # exclude_none keeps receipts of template-less commands identical to those made before templates existed.
+        receipt, replay = reserve(session, owner, route, key, body.model_dump(mode="json", exclude_none=True), now())
         if replay: return replay
         assert receipt is not None
         proposal = session.scalar(select(PlanningProposal).where(PlanningProposal.project_id == project_id, PlanningProposal.id == body.proposal_id, PlanningProposal.user_id == owner))
@@ -75,6 +78,8 @@ def queue(database: Database, settings: Settings, owner: UUID, project_id: UUID,
         if session.scalar(select(PlanReview.id).where(PlanReview.proposal_id == proposal.id)) is None: raise ApplicationError("PLAN_REVIEW_REQUIRED")
         if session.scalar(select(ExecutionJob.id).where(ExecutionJob.project_id == project_id, ExecutionJob.state == "done", ExecutionJob.container_name.is_not(None))): raise ApplicationError("CLEANUP_PENDING")
         available(session, project, proposal.brain_revision_id, proposal.version_id)
+        template = get_template(body.template) if body.template else None
+        if template and (project.current_version_id is not None or proposal.version_id is not None): raise ApplicationError("TEMPLATE_REQUIRES_NEW_PROJECT")
         prior = session.get(BuildRun, retry_id) if retry_id else None
         if retry_id and (prior is None or prior.project_id != project_id or prior.mode != "real" or prior.status != "failed"): raise ApplicationError("RUN_NOT_RETRYABLE")
         context = assemble(session, project, proposal)
@@ -83,11 +88,20 @@ def queue(database: Database, settings: Settings, owner: UUID, project_id: UUID,
             base_version_id=proposal.version_id, retry_of_run_id=retry_id, attempt=prior.attempt+1 if prior else 1,
             mode="real", status="queued", scenario_id="next-web-v1", scenario_version=1, step_cursor=0, created_at=now())
         session.add(run); session.flush()
-        session.add(ExecutionJob(id=uuid4(), project_id=project_id, user_id=owner, run_id=run.id, plan_id=proposal.id, auth_session_id=auth_id,
+        job = ExecutionJob(id=uuid4(), project_id=project_id, user_id=owner, run_id=run.id, plan_id=proposal.id, auth_session_id=auth_id,
             state="queued", phase="context_resolution", context=context.model_dump(mode="json"), bases=fingerprint(session, project),
-            epoch=0, cancel_requested=False, repairs=0, reserved_tokens=0, created_at=now(), deadline_at=now()+timedelta(seconds=settings.build_timeout_seconds)))
+            epoch=0, cancel_requested=False, repairs=0, reserved_tokens=0, created_at=now(), deadline_at=now()+timedelta(seconds=settings.build_timeout_seconds))
+        session.add(job)
         project.lifecycle = "understanding"
-        project.status_event_sequence = emit(session, project, run, "queued", provenance="user_requested")
+        project.status_event_sequence = emit(session, project, run, "queued", provenance="user_requested", template=template)
+        if template:
+            # Attempt 0 is the template seed; the worker verifies a saved candidate instead of calling the model.
+            seed = seed_source(template.id, context.lineage, forbidden(settings))
+            reject_secrets(settings, seed.model_dump_json())
+            seed_id = uuid4()
+            session.add(SourceCandidate(id=seed_id, project_id=project_id, job_id=job.id, attempt=0, digest=seed.digest, parent_digest=None, source=seed.model_dump(mode="json"), created_at=now()))
+            session.flush()
+            project.status_event_sequence = emit(session, project, run, "template_applied", candidate=seed_id, provenance="template", template=template)
         session.flush()
         result = RunRecord.model_validate(run)
         receipt.response_status, receipt.response_body = 202, result.model_dump(mode="json")
@@ -202,6 +216,13 @@ def cancel(database: Database, owner: UUID, project_id: UUID, run_id: UUID) -> R
         return RunRecord.model_validate(run)
 
 
+def run_template(session: Session, run_id: UUID) -> Template | None:
+    """Template recorded on the run's queued event, if the run started from one."""
+    payload = session.scalar(select(BuildEvent.payload).where(BuildEvent.run_id == run_id, BuildEvent.type == "execution.queued").limit(1))
+    identifier = payload.get("template_id") if isinstance(payload, dict) else None
+    return get_template(identifier) if isinstance(identifier, str) else None
+
+
 def publish(database: Database, settings: Settings, identifier: UUID, token: UUID, candidate_id: UUID) -> bool:
     with database.session() as session, session.begin():
         seed = session.get(ExecutionJob, identifier)
@@ -227,7 +248,15 @@ def publish(database: Database, settings: Settings, identifier: UUID, token: UUI
         descriptor = {"kind":"isolated","preview_id":str(preview_id),"url":f"{settings.preview_origin}/p/{preview_id}/{capability}/", "source_digest":source.digest,"expires_at":expires.isoformat()}
         sequence = emit(session, project, run, "publication", candidate=candidate_id, provenance="published")
         brain: BrainContent = read_revision(session, project).content.model_copy(deep=True)
-        for stage in ("model_proposed", "generated", "verified", "published"):
+        template = run_template(session, run.id)
+        seeded = session.scalar(select(SourceCandidate).where(SourceCandidate.job_id == job.id, SourceCandidate.attempt == 0)) if template else None
+        if template and seeded:
+            provenance = Provenance(source="template", fixture_ref=template.ref, run_id=run.id, candidate_id=seeded.id, source_digest=seeded.digest, plan_id=job.plan_id, request_id=run.request_id, event_sequence=sequence)
+            brain.design_decisions.append(DesignDecision(decision_id=f"template-{run.id}", choice=f"template: {template.ref} source {seeded.digest}.",
+                reason="A reviewed application template is the first version; it is generic and not yet tailored to the plan. Later changes are model-proposed.", provenance=provenance))
+        # A template run involves the model only if a repair changed the seed.
+        stages = ("generated", "verified", "published") if seeded and seeded.digest == source.digest else ("model_proposed", "generated", "verified", "published")
+        for stage in stages:
             provenance = Provenance(source=stage, run_id=run.id, candidate_id=candidate_id, source_digest=source.digest, plan_id=job.plan_id, request_id=run.request_id, event_sequence=sequence)
             brain.design_decisions.append(DesignDecision(decision_id=f"{stage}-{run.id}", choice=f"{stage}: next-web-v1 source {source.digest}.",
                 reason="Recorded source and execution evidence. Verification covers recipe commands and runtime health; user acceptance criteria require review.", provenance=provenance))

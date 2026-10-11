@@ -48,8 +48,10 @@ def retry(project_id:UUID,run_id:UUID,request:Request,database:DB,owner:Owner,se
         job=session.scalar(select(ExecutionJob).where(ExecutionJob.project_id==project_id,ExecutionJob.run_id==run_id))
         if job is None:raise ApplicationError('NOT_FOUND')
         plan=job.plan_id
+        template=service.run_template(session,run_id)
     auth=getattr(request.state,'auth_session',None)
-    return service.queue(database,settings,owner.id,project_id,StartBuild(proposal_id=plan),idempotency_key,auth.id if auth else None,run_id)
+    # A retried template run starts from the same template, never from a fresh model generation.
+    return service.queue(database,settings,owner.id,project_id,StartBuild(proposal_id=plan,template=template.id if template else None),idempotency_key,auth.id if auth else None,run_id)
 
 @router.get('/versions/{version_id}/source',response_model=SourceArtifact)
 def source(project_id:UUID,version_id:UUID,database:DB,owner:Owner)->SourceArtifact:
