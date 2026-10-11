@@ -60,6 +60,21 @@ không React/JSX/`next`. `tsconfig` của scaffold không kiểm tra `tests/`.
 
 - `VIETNAMESE_DEFAULTS` (`apps/api/src/f01/providers/prompts.py`) đang áp toàn cục cho mọi project mới; dự kiến chuyển thành profile bật/tắt được.
 
+## Giao diện và chạy thật (G1–G3, 11/10/2026)
+
+- Mọi chữ giao diện nằm trong `apps/web/src/lib/copy/vi.ts` (không dùng thư viện i18n). File trong `apps/web/src/lib/`
+  được test Node nạp trực tiếp, nên phải import tương đối kèm đuôi `.ts` (ví dụ `../copy/vi.ts`), không dùng alias `@/`.
+- Logic "Bước tiếp theo" là hàm thuần `nextStep()` trong `lib/workspace/next-step.ts` (có test). Lệnh lập kế hoạch và
+  xây dựng nằm trong một hook duy nhất `features/workspace/flow.ts`. Lựa chọn mẫu lưu ở localStorage theo project.
+- CSS mới chỉ thêm vào `apps/web/src/styles/vn-shop.css` và chỉ dùng token có sẵn.
+- Ảnh QA: `docs/qa/ux1/`; kết quả chạy thật: `docs/qa/real-run.md`.
+- Bản xem thử chạy trong iframe `sandbox="allow-scripts"`, nên localStorage luôn bị chặn trong xem thử; muốn đổi phải
+  nới sandbox (cấm theo ràng buộc, cần chủ dự án quyết).
+- Mẫu đơn hàng hiện là `orders-template@2`.
+- Dừng `next start` theo PID đang giữ cổng (`lsof -t -iTCP:3000 -sTCP:LISTEN`); `pkill -f "next start"` không khớp vì
+  tiến trình đổi tên thành `next-server`.
+- `next dev` tự sinh `apps/web/AGENTS.md` và `apps/web/CLAUDE.md`; chưa commit hai file này.
+
 ## Các mốc
 
 - M1 — Nền tảng tiếng Việt: chỉ dẫn planning/source generation (UI tiếng Việt, VND dạng `1.250.000 ₫`,
