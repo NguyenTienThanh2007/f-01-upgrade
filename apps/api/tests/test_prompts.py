@@ -12,6 +12,15 @@ def test_planning_defaults_target_vietnamese_browser_only_shop_apps(instructions
     assert "Tailwind" not in instructions
 
 
+def test_context_planning_preserves_existing_product_conventions() -> None:
+    rule = ("When changing an existing product, keep its current\nlanguage, money and date formats and other conventions; "
+            "the defaults below apply\nonly to a new product.")
+    assert rule in CONTEXT_INSTRUCTIONS
+    # The preservation rule must precede the defaults it scopes.
+    assert CONTEXT_INSTRUCTIONS.index(rule) < CONTEXT_INSTRUCTIONS.index("plan for Vietnamese small-shop owners")
+    assert "existing product" not in PLANNING_INSTRUCTIONS
+
+
 def test_planning_prompts_keep_existing_safety_rules() -> None:
     assert "never claim code was built, tested or deployed" in PLANNING_INSTRUCTIONS
     assert "Do not\nrequest or include credentials" in PLANNING_INSTRUCTIONS
