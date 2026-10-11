@@ -141,6 +141,16 @@ export const vi = {
   starters: {
     heading: 'HOẶC BẮT ĐẦU TỪ MỘT VÍ DỤ',
     label: 'Ví dụ mô tả',
+    items: [
+      { id: 'tea', number: '01', category: 'Quán trà sữa', title: 'Ghi đơn mang đi nhanh hơn', short: 'Trà sữa', brief: 'Quán trà sữa nhỏ, cần ghi đơn mang đi và giao hàng, theo dõi đơn đang giao, đánh dấu đã thanh toán và xem tổng tiền mỗi ngày trên điện thoại.' },
+      { id: 'grocery', number: '02', category: 'Tiệm tạp hoá', title: 'Biết hàng nào sắp hết', short: 'Tạp hoá', brief: 'Tiệm tạp hoá gần chợ, cần ghi đơn khách đặt qua Zalo, theo dõi đơn đang giao, tìm khách theo số điện thoại và xuất danh sách đơn ra file CSV.' },
+      { id: 'fashion', number: '03', category: 'Shop quần áo', title: 'Đơn online không bị sót', short: 'Quần áo', brief: 'Shop quần áo bán online qua Facebook, cần quản lý đơn hàng theo trạng thái mới, đang giao, đã giao, đã thanh toán, huỷ, và xem doanh thu theo ngày.' },
+    ],
+  },
+  samples: {
+    tea: { brand: 'Trà sữa Mây / đơn hôm nay', meta: 'BẢNG GIÁ', title: ['Ghi đơn nhanh.', 'Biết ngay tổng tiền.'], lede: 'Quán của bạn, trong một màn hình.', metrics: [['ĐƠN HÔM NAY', '32'], ['TỔNG TIỀN', '1,45tr ₫'], ['ĐANG GIAO', '04']], rows: [['35.000 ₫', 'Trà sữa trân châu', 'Bán chạy nhất'], ['40.000 ₫', 'Trà đào cam sả', 'Size L'], ['45.000 ₫', 'Sữa tươi trân châu đường đen', 'Size L']] },
+    grocery: { brand: 'Tạp hoá Cô Ba / tồn kho', meta: 'THỨ HAI, 12/10', title: ['Hàng sắp hết, biết trước.'], lede: 'Bảng giá và số lượng còn', metrics: [], rows: [['12', 'Gạo ST25 túi 5 kg', '180.000 ₫'], ['03', 'Nước mắm 500 ml · sắp hết', '42.000 ₫'], ['08', 'Mì gói thùng 30 gói', '115.000 ₫']] },
+    fashion: { brand: 'Shop Linh / đơn online', meta: 'ĐƠN HÀNG', title: ['Đơn nào cũng có chỗ.', 'Không sót đơn nào.'], lede: 'Hôm nay, trong một màn hình.', metrics: [['ĐƠN MỚI', '07'], ['DOANH THU', '2,4tr ₫'], ['ĐANG GIAO', '05']], rows: [['Mới', 'Váy hoa nhí · 450.000 ₫', 'Chị Hạnh'], ['Đang giao', 'Quần jean ống suông · 390.000 ₫', 'Anh Tuấn'], ['Đã thanh toán', 'Áo sơ mi linen · 320.000 ₫', 'Chị Mai']] },
   },
   plan: {
     topline: 'DỰ ÁN / BẢN ĐẦU',
@@ -162,6 +172,11 @@ export const vi = {
     footer: 'Kế hoạch nháp · Chưa lưu · Chưa xây dựng',
   },
   templates: {
+    catalog: [
+      { id: 'orders', name: 'Quản lý đơn hàng', summary: 'Ghi đơn, 5 trạng thái giao hàng, tìm theo tên hoặc số điện thoại, tổng tiền theo ngày, xuất CSV.', brief: 'Ứng dụng quản lý đơn hàng cho cửa hàng nhỏ: ghi đơn, theo dõi trạng thái mới, đang giao, đã giao, đã thanh toán, huỷ; tìm khách theo tên hoặc số điện thoại; xem tổng tiền theo ngày và xuất danh sách đơn ra CSV.' },
+      { id: 'inventory', name: 'Tồn kho', summary: 'Nhập hàng, xuất hàng, cảnh báo hàng sắp hết.', brief: '' },
+      { id: 'ledger', name: 'Sổ thu chi', summary: 'Ghi khoản thu, khoản chi và xem lãi lỗ theo tháng.', brief: '' },
+    ],
     heading: 'Bắt đầu từ mẫu',
     note: 'Bấm một lần để điền sẵn mô tả. Ứng dụng đầu tiên sẽ dựng từ mẫu, sau đó bạn chỉnh tiếp bằng lời.',
     selected: 'Đã chọn',
@@ -641,6 +656,11 @@ export const vi = {
     pause: 'Dừng',
     replay: 'Xem lại',
     footnote: 'Trình tự minh hoạ. Không có ứng dụng nào được dựng hay phát hành ở đây.',
+    scopes: {
+      tea: { name: 'Trà sữa Mây', outcome: 'Ghi đơn nhanh, không sót đơn mang đi.', features: ['Ghi đơn và món', 'Theo dõi đơn đang giao', 'Tổng tiền mỗi ngày'] },
+      grocery: { name: 'Tạp hoá Cô Ba', outcome: 'Biết hàng nào sắp hết trước khi khách hỏi.', features: ['Danh sách hàng và giá', 'Số lượng còn trong kho', 'Cảnh báo sắp hết'] },
+      fashion: { name: 'Shop Linh', outcome: 'Đơn online rõ ràng từ lúc đặt tới lúc nhận tiền.', features: ['Đơn theo trạng thái', 'Tìm khách theo số điện thoại', 'Doanh thu theo ngày'] },
+    },
     stages: [
       { label: 'Tìm hiểu', time: '08:01', event: 'Đọc mô tả cửa hàng', receipt: 'ĐẦU VÀO / MONG MUỐN', detail: 'Mô tả mẫu cho biết ai bán, ai mua và việc gì cần nhanh hơn.' },
       { label: 'Lập kế hoạch', time: '08:02', event: 'Đề xuất chức năng', receipt: 'PHẠM VI / QUYẾT ĐỊNH', detail: 'Kế hoạch mẫu nối mong muốn với vài chức năng cần thiết nhất.' },

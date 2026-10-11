@@ -6,9 +6,9 @@ import { ProjectPulse } from '@/features/project-pulse/project-pulse';
 import { IDEA_LIMIT, isErrorCode, isProjectPlan, parseIdea, planningErrors, record, type PlanningError, type ProjectPlan } from '@/lib/planning/contracts';
 import { PlanView } from './plan-view';
 import { ProjectStarters, projectStarters, type StarterId } from './project-starters';
+import { vi } from '@/lib/copy/vi';
 
 type State = { kind: 'idle' } | { kind: 'pending' } | { kind: 'success'; plan: ProjectPlan; idea: string } | { kind: 'error'; error: PlanningError };
-const example = 'Build a CRM for a small real estate agency with authentication, leads, pipeline, notes and analytics.';
 
 function clientError(code: PlanningError['code']): PlanningError {
   return { code, message: planningErrors[code].message, request_id: '' };
@@ -80,35 +80,35 @@ export function ProjectPlanningForm({ presentation = 'project', initialIdea = ''
   return <div className={`planning-flow planning-${presentation}`}>
     <div className="planning-composition">
     <form className="project-form" id={presentation === 'home' ? 'command-surface' : undefined} onSubmit={submit} noValidate aria-busy={pending}>
-      <div className="composer-topline"><span className="meta">{presentation === 'home' ? 'COMMAND / NEW BRIEF' : '01 / YOUR STARTING POINT'}</span><ProjectPulse state={pending ? 'planning' : 'idle'} label={pending ? 'Planning' : 'Ready for an idea'} animate={pending} /></div>
-      {presentation === 'home' && <div className="command-intention"><span className="command-cursor" aria-hidden="true">↳</span><p>What should exist?</p><span className="meta">REQUEST 001</span></div>}
-      <div className="brief-label"><label htmlFor="brief">Product brief</label><span className="meta">IDEA OR OUTCOME</span></div>
+      <div className="composer-topline"><span className="meta">{presentation === 'home' ? vi.planner.homeTopline : vi.planner.projectTopline}</span><ProjectPulse state={pending ? 'planning' : 'idle'} label={pending ? vi.planner.pulsePending : vi.planner.pulseIdle} animate={pending} /></div>
+      {presentation === 'home' && <div className="command-intention"><span className="command-cursor" aria-hidden="true">↳</span><p>{vi.planner.intention}</p><span className="meta">{vi.planner.intentionMeta}</span></div>}
+      <div className="brief-label"><label htmlFor="brief">{vi.planner.label}</label><span className="meta">{vi.planner.labelMeta}</span></div>
       <textarea ref={brief} id="brief" name="idea" rows={5} value={idea} readOnly={pending}
-        placeholder={presentation === 'home' ? 'I want fewer missed appointments. Build a booking tool that keeps my studio’s day on track.' : example} aria-required="true" aria-invalid={Boolean(validation)}
+        placeholder={presentation === 'home' ? vi.planner.homePlaceholder : vi.planner.projectPlaceholder} aria-required="true" aria-invalid={Boolean(validation)}
         aria-describedby={`brief-help brief-count${validation ? ' brief-error' : ''}`}
         onChange={event => { setIdea(event.target.value); setSelectedStarter(undefined); setValidation(''); if (state.kind === 'error') setState({ kind: 'idle' }); }} />
-      <div className="brief-support"><p id="brief-help">Who is it for? What should get better?</p><span id="brief-count" className="meta">{Array.from(idea).length.toLocaleString('en-US')} / {IDEA_LIMIT.toLocaleString('en-US')}</span></div>
+      <div className="brief-support"><p id="brief-help">{vi.planner.help}</p><span id="brief-count" className="meta">{vi.planner.count(Array.from(idea).length, IDEA_LIMIT)}</span></div>
       {validation && <p id="brief-error" className="form-error" role="alert">{validation}</p>}
-      <div className="planning-actions"><Button type="submit" pending={pending}>{pending ? 'Creating plan…' : state.kind === 'success' ? 'Create another plan' : 'Create plan'}</Button>
-        {pending && <Button type="button" variant="quiet" onClick={cancel}>Cancel</Button>}
-        {!pending && <span className="meta">BRIEF → STRUCTURED PLAN</span>}
+      <div className="planning-actions"><Button type="submit" pending={pending}>{pending ? vi.planner.submitPending : state.kind === 'success' ? vi.planner.submitAgain : vi.planner.submit}</Button>
+        {pending && <Button type="button" variant="quiet" onClick={cancel}>{vi.common.cancel}</Button>}
+        {!pending && <span className="meta">{vi.planner.flow}</span>}
       </div>
-      <p className="planning-footnote">You’ll get features, a recommended stack and milestones. A real plan, ready for review. No project is saved or built.</p>
+      <p className="planning-footnote">{vi.planner.footnote}</p>
       <ProjectStarters selected={selectedStarter} disabled={pending} categoryFirst={presentation === 'home'} onSelect={(id, starterBrief) => { setIdea(starterBrief); setSelectedStarter(id); setValidation(''); setState({ kind: 'idle' }); onStarterChange?.(id); brief.current?.focus(); }} />
     </form>
     {companion}
     </div>
 
     <div className="planning-feedback" role="status" aria-live="polite" aria-atomic="true">
-      {pending && <div className="planning-progress"><ProjectPulse state="planning" animate /><p>Structuring the product, features, stack, and milestones. This may take a moment.</p></div>}
-      {state.kind === 'success' && <p className="planning-success">Plan ready to review.</p>}
+      {pending && <div className="planning-progress"><ProjectPulse state="planning" animate /><p>{vi.planner.progress}</p></div>}
+      {state.kind === 'success' && <p className="planning-success">{vi.planner.success}</p>}
     </div>
-    {state.kind === 'error' && <div className="planning-error" role="alert"><h2>Planning needs attention</h2><p>{state.error.message}</p>
-      {state.error.request_id && <span className="meta">Reference: {state.error.request_id}</span>}
-      <p className="muted">Your brief has been preserved. Use Create plan when you are ready to retry.</p>
+    {state.kind === 'error' && <div className="planning-error" role="alert"><h2>{vi.planner.errorTitle}</h2><p>{state.error.message}</p>
+      {state.error.request_id && <span className="meta">{vi.planner.errorReference}: {state.error.request_id}</span>}
+      <p className="muted">{vi.planner.errorKept}</p>
     </div>}
-    {state.kind === 'success' && <div ref={result} className="planning-result" tabIndex={-1} aria-label="Generated project plan">
-      {idea.trim() !== state.idea && <p className="plan-stale">This plan reflects the submitted brief. Create another plan to include your edits.</p>}
+    {state.kind === 'success' && <div ref={result} className="planning-result" tabIndex={-1} aria-label={vi.planner.resultLabel}>
+      {idea.trim() !== state.idea && <p className="plan-stale">{vi.planner.stale}</p>}
       <PlanView plan={state.plan} />
     </div>}
   </div>;

@@ -1,0 +1,15 @@
+/* vn-shop UX layer. Reuses the existing tokens only (no new colors or fonts). */
+
+/* Touch targets: at least 44px on phones, tablets and coarse pointers. */
+@media (max-width: 1023px), (pointer: coarse) {
+  .button, .icon-button, .workspace-tabs a, .tech-links a, .template-choice, .viewport-controls button, select, input:not([type="checkbox"]):not([type="radio"]) { min-height: 44px; }
+}
+
+/* Homepage template list: unavailable entries and readable summaries. */
+.template-list .template-unavailable { display: flex; align-items: center; gap: 20px; min-height: 80px; padding: 16px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+.template-list .template-summary { display: block; font-size: 13px; line-height: 18px; color: var(--muted); margin-top: 2px; }
+
+/* Dashboard empty state: one sentence, one action. */
+.vn-empty { max-width: 560px; margin: 48px 0; padding: 32px 0; border-top: 1px solid var(--line); }
+.vn-empty h2 { font-size: 24px; line-height: 30px; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 8px; }
+.vn-empty p { margin: 0 0 20px; color: var(--muted); }

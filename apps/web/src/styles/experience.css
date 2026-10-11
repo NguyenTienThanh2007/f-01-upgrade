@@ -50,14 +50,14 @@ select { font: inherit; }
 .starter-mark i { display: block; width: 6px; height: 12px; border: 1px solid currentColor; }
 .starter-mark i:nth-child(2) { height: 19px; }
 .starter-mark i:nth-child(3) { height: 26px; background: currentColor; }
-.starter-booking .starter-mark { flex-direction: column; align-items: flex-start; justify-content: center; }
-.starter-booking .starter-mark i { width: 24px; height: 4px; }
-.starter-booking .starter-mark i:nth-child(2) { width: 18px; }
-.starter-booking .starter-mark i:nth-child(3) { width: 12px; }
-.starter-game .starter-mark { align-items: center; }
-.starter-game .starter-mark i { width: 8px; height: 8px; }
-.starter-game .starter-mark i:nth-child(2) { transform: translateY(-8px); }
-.starter-game .starter-mark i:nth-child(3) { transform: translateY(8px); }
+.starter-grocery .starter-mark { flex-direction: column; align-items: flex-start; justify-content: center; }
+.starter-grocery .starter-mark i { width: 24px; height: 4px; }
+.starter-grocery .starter-mark i:nth-child(2) { width: 18px; }
+.starter-grocery .starter-mark i:nth-child(3) { width: 12px; }
+.starter-fashion .starter-mark { align-items: center; }
+.starter-fashion .starter-mark i { width: 8px; height: 8px; }
+.starter-fashion .starter-mark i:nth-child(2) { transform: translateY(-8px); }
+.starter-fashion .starter-mark i:nth-child(3) { transform: translateY(8px); }
 .project-pulse { gap: 10px; font: 12px/18px var(--font-mono); }
 .pulse-strokes { gap: 3px; align-items: flex-end; width: 18px; height: 20px; flex-shrink: 0; padding-bottom: 2px; border-bottom: 1px solid currentColor; }
 .pulse-strokes i { width: 4px; height: 10px; border: 1px solid currentColor; }
