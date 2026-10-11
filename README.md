@@ -583,3 +583,48 @@ Historical Phase 2A handoff: that milestone added identity/planning only; its fo
 ## Phase 2B completed; Phase 2C proposed only
 
 Real source generation, immutable candidates/evidence, fenced jobs, trusted dependency verification/typecheck/build/tests, bounded repair, verified preview and gateway isolation passed Docker acceptance. Failed updates retain the prior successful version. The matching exact-image report remains required for operational enablement. Production deployment is not implemented; its bounded proposal is in [PHASE2C_IMPLEMENTATION.md](PHASE2C_IMPLEMENTATION.md). Never run generated code on the factory host.
+
+## Chạy chế độ build thật trên máy (nhánh vn-shop)
+
+Điều kiện: Docker Desktop đang chạy; có image đã nghiệm thu `sha256:bf55945a66450b4d747196aed159eba926ca377b66e41400da70c0a54e3363c0`; có báo cáo nghiệm thu passed cho đúng image đó tại `.runtime/phase2b-acceptance-report.json`; PostgreSQL (container `f01-db`, cổng 5434) đang chạy. Settings sẽ từ chối bật chế độ thật nếu thiếu báo cáo hoặc báo cáo không khớp image.
+
+Các khóa cần có (giá trị nằm trong file `.env`, không commit):
+
+- `.env` ở gốc repo: `DATABASE_URL`, `DEV_API_TOKEN`, `EXECUTION_MODE=real`, `SIMULATION_RUNNER_ENABLED=false`, `NEXT_PUBLIC_APP_URL=http://localhost:3000`, `API_INTERNAL_URL=http://127.0.0.1:8000`.
+- `apps/api/.env`: `OPENAI_API_KEY`, `REAL_EXECUTION_ENABLED=true`, `SANDBOX_IMAGE_ID`, `SANDBOX_ACCEPTANCE_REPORT` (đường dẫn tuyệt đối), `FACTORY_ORIGIN=http://localhost:3000`, `PREVIEW_ORIGIN=http://127.0.0.1:3031`.
+
+Bước tạo kế hoạch (`POST /v1/projects/{id}/planning/attempts`) luôn gọi OpenAI, và build chỉ chạy khi có kế hoạch đã duyệt, nên cần `OPENAI_API_KEY` kể cả khi build từ mẫu. Bản thân build từ mẫu không gọi model, trừ khi mẫu lỗi và worker phải nhờ AI sửa. Tự mở `apps/api/.env` bằng trình soạn thảo và điền giá trị sau `OPENAI_API_KEY=`; không dán khóa vào chat, commit hay log.
+
+Áp migration một lần trước khi chạy:
+
+```bash
+cd apps/api && uv run --locked alembic upgrade head
+```
+
+Chạy ba tiến trình, mỗi tiến trình một cửa sổ terminal riêng, từ gốc repo.
+
+API:
+
+```bash
+cd apps/api && uv run --locked uvicorn f01.main:app --host 127.0.0.1 --port 8000
+```
+
+Worker:
+
+```bash
+cd apps/api && uv run --locked python -m f01.execution.worker
+```
+
+Preview gateway:
+
+```bash
+cd apps/api && uv run --locked uvicorn f01.execution.preview_gateway:app --host 127.0.0.1 --port 3031
+```
+
+Giao diện (tuỳ chọn, để thao tác bằng trình duyệt tại http://localhost:3000):
+
+```bash
+pnpm dev
+```
+
+Luồng build từ mẫu: tạo project → tạo kế hoạch và duyệt → bấm "Dùng mẫu Quản lý đơn hàng". Preview mở tại `http://127.0.0.1:3031/p/<preview_id>/<capability>/`; đường dẫn này là khóa truy cập, không chia sẻ. Container preview tự dừng sau `BUILD_TIMEOUT_SECONDS + PREVIEW_TTL_SECONDS` (mặc định 4200 giây) nhưng không tự bị xoá; worker chỉ dọn những preview có trong DB mà nó đang dùng.
