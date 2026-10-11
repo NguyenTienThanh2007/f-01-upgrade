@@ -52,6 +52,10 @@ Test của app sinh ra chạy bằng `node --test -- tests/*.test.mjs` trong ima
 import file TS phải ghi rõ đuôi `.ts`; module được test phải tự chứa, chỉ dùng TS xoá được (không `enum`/`namespace`),
 không React/JSX/`next`. `tsconfig` của scaffold không kiểm tra `tests/`.
 
+## Ghi chú thiết kế
+
+- `VIETNAMESE_DEFAULTS` (`apps/api/src/f01/providers/prompts.py`) đang áp toàn cục cho mọi project mới; dự kiến chuyển thành profile bật/tắt được.
+
 ## Các mốc
 
 - M1 — Nền tảng tiếng Việt: chỉ dẫn planning/source generation (UI tiếng Việt, VND dạng `1.250.000 ₫`,
